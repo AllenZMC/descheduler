@@ -285,13 +285,17 @@ func NewProfile(config api.DeschedulerProfile, reg pluginregistry.Registry, opts
 	filters := []podutil.FilterFunc{}
 	for _, pluginName := range config.Plugins.Filter.Enabled {
 		pi.filterPlugins = append(pi.filterPlugins, plugins[pluginName].(filterPlugin))
-		filters = append(filters, plugins[pluginName].(filterPlugin).Filter)
+		fp := plugins[pluginName].(filterPlugin)
+		fpf := fp.Filter
+		filters = append(filters, fpf)
 	}
 
 	preEvictionFilters := []podutil.FilterFunc{}
 	for _, pluginName := range config.Plugins.PreEvictionFilter.Enabled {
 		pi.preEvictionFilterPlugins = append(pi.preEvictionFilterPlugins, plugins[pluginName].(preEvictionFilterPlugin))
-		preEvictionFilters = append(preEvictionFilters, plugins[pluginName].(preEvictionFilterPlugin).PreEvictionFilter)
+		pefp := plugins[pluginName].(preEvictionFilterPlugin)
+		pef := pefp.PreEvictionFilter
+		preEvictionFilters = append(preEvictionFilters, pef)
 	}
 
 	handle.evictor.filter = podutil.WrapFilterFuncs(filters...)
@@ -320,7 +324,7 @@ func (d profileImpl) RunDeschedulePlugins(ctx context.Context, nodes []*v1.Node)
 			span.AddEvent("Plugin Execution Failed", trace.WithAttributes(attribute.String("err", status.Err.Error())))
 			errs = append(errs, fmt.Errorf("plugin %q finished with error: %v", pl.Name(), status.Err))
 		}
-		klog.V(1).InfoS("Total number of pods evicted", "extension point", "Deschedule", "evictedPods", d.podEvictor.TotalEvicted()-evicted)
+		klog.V(1).InfoS("Total number of pods evicted", "plugin name", pl.Name(), "extension point", "Deschedule", "evictedPods", d.podEvictor.TotalEvicted()-evicted)
 	}
 
 	aggrErr := errors.NewAggregate(errs)
@@ -353,7 +357,7 @@ func (d profileImpl) RunBalancePlugins(ctx context.Context, nodes []*v1.Node) *f
 			span.AddEvent("Plugin Execution Failed", trace.WithAttributes(attribute.String("err", status.Err.Error())))
 			errs = append(errs, fmt.Errorf("plugin %q finished with error: %v", pl.Name(), status.Err))
 		}
-		klog.V(1).InfoS("Total number of pods evicted", "extension point", "Balance", "evictedPods", d.podEvictor.TotalEvicted()-evicted)
+		klog.V(1).InfoS("Total number of pods evicted", "plugin name", pl.Name(), "extension point", "Balance", "evictedPods", d.podEvictor.TotalEvicted()-evicted)
 	}
 
 	aggrErr := errors.NewAggregate(errs)

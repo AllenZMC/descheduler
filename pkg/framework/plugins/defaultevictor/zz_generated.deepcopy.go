@@ -41,6 +41,11 @@ func (in *DefaultEvictorArgs) DeepCopyInto(out *DefaultEvictorArgs) {
 		*out = new(api.PriorityThreshold)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Namespaces != nil {
+		in, out := &in.Namespaces, &out.Namespaces
+		*out = new(api.Namespaces)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

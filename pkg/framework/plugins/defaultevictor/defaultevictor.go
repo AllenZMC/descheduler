@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	nodeutil "sigs.k8s.io/descheduler/pkg/descheduler/node"
 	podutil "sigs.k8s.io/descheduler/pkg/descheduler/pod"
@@ -139,6 +140,28 @@ func New(args runtime.Object, handle frameworktypes.Handle) (frameworktypes.Plug
 			if !selector.Matches(labels.Set(pod.Labels)) {
 				return fmt.Errorf("pod labels do not match the labelSelector filter in the policy parameter")
 			}
+			return nil
+		})
+	}
+
+	if defaultEvictorArgs.Namespaces != nil {
+		ev.constraints = append(ev.constraints, func(pod *v1.Pod) error {
+			var includedNamespaces, excludedNamespaces sets.String
+
+			if defaultEvictorArgs.Namespaces != nil {
+				includedNamespaces = sets.NewString(defaultEvictorArgs.Namespaces.Include...)
+				excludedNamespaces = sets.NewString(defaultEvictorArgs.Namespaces.Exclude...)
+			}
+
+			if len(includedNamespaces) > 0 && !includedNamespaces.Has(pod.Namespace) {
+				return fmt.Errorf("pod labels do not match the labelSelector filter in the policy parameter")
+
+			}
+			if len(excludedNamespaces) > 0 && excludedNamespaces.Has(pod.Namespace) {
+				return fmt.Errorf("pod labels do not match the labelSelector filter in the policy parameter")
+
+			}
+
 			return nil
 		})
 	}

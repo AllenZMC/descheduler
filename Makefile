@@ -17,7 +17,7 @@
 export CONTAINER_ENGINE ?= docker
 
 # VERSION is based on a date stamp plus the last commit
-VERSION?=v$(shell date +%Y%m%d)-$(shell git describe --tags)
+VERSION?=v$(date +%Y%m%d)-master
 BRANCH?=$(shell git branch --show-current)
 SHA1?=$(shell git rev-parse HEAD)
 BUILD=$(shell date +%FT%T%z)
@@ -72,7 +72,7 @@ dev-image: build
 	$(CONTAINER_ENGINE) build -f Dockerfile.dev -t $(IMAGE) .
 
 image:
-	$(CONTAINER_ENGINE) build --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE) .
+	$(CONTAINER_ENGINE) build --platform amd64 --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE) .
 
 image.amd64:
 	$(CONTAINER_ENGINE) build --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE)-amd64 .
