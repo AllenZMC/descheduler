@@ -17,7 +17,6 @@ limitations under the License.
 package pod
 
 import (
-	"fmt"
 	"sort"
 
 	v1 "k8s.io/api/core/v1"
@@ -25,8 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
-
 	"sigs.k8s.io/descheduler/pkg/utils"
 )
 
@@ -101,10 +98,6 @@ func (o *Options) BuildFilterFunc() (FilterFunc, error) {
 		}
 	}
 	return func(pod *v1.Pod) bool {
-		if o.filter != nil {
-			klog.V(5).Info(fmt.Sprintf("pod: %v, o.filter res is %v", klog.KObj(pod), o.filter(pod)))
-		}
-
 		if o.filter != nil && !o.filter(pod) {
 			return false
 		}
