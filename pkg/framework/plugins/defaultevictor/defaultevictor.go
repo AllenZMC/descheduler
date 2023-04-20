@@ -147,19 +147,16 @@ func New(args runtime.Object, handle frameworktypes.Handle) (frameworktypes.Plug
 	if defaultEvictorArgs.Namespaces != nil {
 		ev.constraints = append(ev.constraints, func(pod *v1.Pod) error {
 			var includedNamespaces, excludedNamespaces sets.String
-
 			if defaultEvictorArgs.Namespaces != nil {
 				includedNamespaces = sets.NewString(defaultEvictorArgs.Namespaces.Include...)
 				excludedNamespaces = sets.NewString(defaultEvictorArgs.Namespaces.Exclude...)
 			}
 
 			if len(includedNamespaces) > 0 && !includedNamespaces.Has(pod.Namespace) {
-				return fmt.Errorf("pod labels do not match the labelSelector filter in the policy parameter")
-
+				return fmt.Errorf("pod namespace is not in the includedNamespaces filter in the policy parameter")
 			}
 			if len(excludedNamespaces) > 0 && excludedNamespaces.Has(pod.Namespace) {
-				return fmt.Errorf("pod labels do not match the labelSelector filter in the policy parameter")
-
+				return fmt.Errorf("pod namespace is in the excludedNamespaces filter in the policy parameter")
 			}
 
 			return nil
