@@ -49,4 +49,7 @@ func SetDefaults_DefaultEvictorArgs(obj runtime.Object) {
 	if !args.NodeFit {
 		args.NodeFit = false
 	}
+	if args.Namespaces == nil {
+		args.Namespaces = nil
+	}
 }
