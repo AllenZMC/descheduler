@@ -155,6 +155,10 @@ func (d *descheduler) runDeschedulerLoop(ctx context.Context, nodes []*v1.Node) 
 
 	klog.V(3).Infof("Building a pod evictor")
 	podEvictor := evictions.NewPodEvictor(
+		d.rs.Client,
+		d.rs.OutputNamespace,
+		d.rs.OutputName,
+
 		client,
 		d.evictionPolicyGroupVersion,
 		d.rs.DryRun,
@@ -166,6 +170,10 @@ func (d *descheduler) runDeschedulerLoop(ctx context.Context, nodes []*v1.Node) 
 	)
 
 	d.runProfiles(ctx, client, nodes, podEvictor)
+
+	if d.rs.DryRun {
+		podEvictor.StoreInCM()
+	}
 
 	klog.V(1).InfoS("Number of evicted pods", "totalEvicted", podEvictor.TotalEvicted())
 

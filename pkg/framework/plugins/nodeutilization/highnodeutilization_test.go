@@ -486,6 +486,9 @@ func TestHighNodeUtilization(t *testing.T) {
 
 			podEvictor := evictions.NewPodEvictor(
 				fakeClient,
+				"test",
+				"test",
+				fakeClient,
 				"v1",
 				false,
 				nil,
@@ -637,6 +640,9 @@ func TestHighNodeUtilizationWithTaints(t *testing.T) {
 			eventRecorder := &events.FakeRecorder{}
 
 			podEvictor := evictions.NewPodEvictor(
+				fakeClient,
+				"test",
+				"test",
 				fakeClient,
 				"policy/v1",
 				false,

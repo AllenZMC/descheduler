@@ -198,6 +198,9 @@ func runPodLifetimePlugin(
 
 	podEvictor := evictions.NewPodEvictor(
 		clientset,
+		"test",
+		"test",
+		clientset,
 		evictionPolicyGroupVersion,
 		false,
 		nil,
@@ -1488,6 +1491,9 @@ func initPodEvictorOrFail(t *testing.T, clientSet clientset.Interface, getPodsAs
 	eventRecorder := &events.FakeRecorder{}
 
 	return evictions.NewPodEvictor(
+		clientSet,
+		"test",
+		"test",
 		clientSet,
 		evictionPolicyGroupVersion,
 		false,

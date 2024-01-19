@@ -93,6 +93,10 @@ func (rs *DeschedulerServer) AddFlags(fs *pflag.FlagSet) {
 	fs.Float32Var(&rs.ClientConnection.QPS, "client-connection-qps", rs.ClientConnection.QPS, "QPS to use for interacting with kubernetes apiserver.")
 	fs.Int32Var(&rs.ClientConnection.Burst, "client-connection-burst", rs.ClientConnection.Burst, "Burst to use for interacting with kubernetes apiserver.")
 	fs.StringVar(&rs.PolicyConfigFile, "policy-config-file", rs.PolicyConfigFile, "File with descheduler policy configuration.")
+
+	fs.StringVar(&rs.OutputNamespace, "output-configmap-ns", rs.OutputNamespace, "CM namespace with descheduler evicted pod data.")
+	fs.StringVar(&rs.OutputName, "output-configmap-name", rs.OutputName, "CM name with descheduler evicted pod data.")
+
 	fs.BoolVar(&rs.DryRun, "dry-run", rs.DryRun, "Execute descheduler in dry run mode.")
 	fs.BoolVar(&rs.DisableMetrics, "disable-metrics", rs.DisableMetrics, "Disables metrics. The metrics are by default served through https://localhost:10258/metrics. Secure address, resp. port can be changed through --bind-address, resp. --secure-port flags.")
 	fs.StringVar(&rs.Tracing.CollectorEndpoint, "otel-collector-endpoint", "", "Set this flag to the OpenTelemetry Collector Service Address")

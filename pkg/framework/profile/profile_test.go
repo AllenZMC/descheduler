@@ -244,7 +244,10 @@ func TestProfileDescheduleBalanceExtensionPointsEviction(t *testing.T) {
 			eventBroadcaster, eventRecorder := utils.GetRecorderAndBroadcaster(ctx, eventClient)
 			defer eventBroadcaster.Shutdown()
 
-			podEvictor := evictions.NewPodEvictor(client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
+			podEvictor := evictions.NewPodEvictor(
+				client,
+				"test",
+				"test", client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
 
 			prfl, err := NewProfile(
 				test.config,
@@ -393,7 +396,10 @@ func TestProfileExtensionPoints(t *testing.T) {
 	eventBroadcaster, eventRecorder := utils.GetRecorderAndBroadcaster(ctx, eventClient)
 	defer eventBroadcaster.Shutdown()
 
-	podEvictor := evictions.NewPodEvictor(client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
+	podEvictor := evictions.NewPodEvictor(
+		client,
+		"test",
+		"test", client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
 
 	prfl, err := NewProfile(
 		api.DeschedulerProfile{
@@ -605,7 +611,10 @@ func TestProfileExtensionPointOrdering(t *testing.T) {
 	eventBroadcaster, eventRecorder := utils.GetRecorderAndBroadcaster(ctx, eventClient)
 	defer eventBroadcaster.Shutdown()
 
-	podEvictor := evictions.NewPodEvictor(client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
+	podEvictor := evictions.NewPodEvictor(
+		client,
+		"test",
+		"test", client, "policy/v1", false, nil, nil, nodes, true, eventRecorder)
 
 	prfl, err := NewProfile(
 		api.DeschedulerProfile{

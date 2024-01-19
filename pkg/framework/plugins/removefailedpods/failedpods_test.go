@@ -291,6 +291,9 @@ func TestRemoveFailedPods(t *testing.T) {
 
 			podEvictor := evictions.NewPodEvictor(
 				fakeClient,
+				"test",
+				"test",
+				fakeClient,
 				policyv1.SchemeGroupVersion.String(),
 				false,
 				nil,

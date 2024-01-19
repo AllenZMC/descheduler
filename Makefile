@@ -72,7 +72,7 @@ dev-image: build
 	$(CONTAINER_ENGINE) build -f Dockerfile.dev -t $(IMAGE) .
 
 image:
-	$(CONTAINER_ENGINE) build --platform amd64 --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE) .
+	$(CONTAINER_ENGINE) build --platform linux/amd64 --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE) .
 
 image.amd64:
 	$(CONTAINER_ENGINE) build --build-arg VERSION="$(VERSION)" --build-arg ARCH="amd64" -t $(IMAGE)-amd64 .

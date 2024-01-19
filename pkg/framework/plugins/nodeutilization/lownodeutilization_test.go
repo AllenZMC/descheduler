@@ -888,6 +888,9 @@ func TestLowNodeUtilization(t *testing.T) {
 
 			podEvictor := evictions.NewPodEvictor(
 				fakeClient,
+				"test",
+				"test",
+				fakeClient,
 				policy.SchemeGroupVersion.String(),
 				false,
 				nil,
@@ -1059,6 +1062,9 @@ func TestLowNodeUtilizationWithTaints(t *testing.T) {
 			eventRecorder := &events.FakeRecorder{}
 
 			podEvictor := evictions.NewPodEvictor(
+				fakeClient,
+				"test",
+				"test",
 				fakeClient,
 				policy.SchemeGroupVersion.String(),
 				false,

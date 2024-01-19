@@ -18,6 +18,7 @@ package evictions
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -42,6 +43,11 @@ type (
 )
 
 type PodEvictor struct {
+	kubeClient      clientset.Interface
+	outputNamespace string
+	outputName      string
+	outputPods      map[string]string
+
 	client                     clientset.Interface
 	nodes                      []*v1.Node
 	policyGroupVersion         string
@@ -55,6 +61,10 @@ type PodEvictor struct {
 }
 
 func NewPodEvictor(
+	kubeClinet clientset.Interface,
+	outputNamespace string,
+	outputName string,
+
 	client clientset.Interface,
 	policyGroupVersion string,
 	dryRun bool,
@@ -70,8 +80,14 @@ func NewPodEvictor(
 		// Initialize podsEvicted till now with 0.
 		nodePodCount[node.Name] = 0
 	}
+	outputPods := make(map[string]string)
 
 	return &PodEvictor{
+		kubeClient:      kubeClinet,
+		outputNamespace: outputNamespace,
+		outputName:      outputName,
+		outputPods:      outputPods,
+
 		client:                     client,
 		nodes:                      nodes,
 		policyGroupVersion:         policyGroupVersion,
@@ -167,6 +183,8 @@ func (pe *PodEvictor) EvictPod(ctx context.Context, pod *v1.Pod, opts EvictOptio
 
 	if pe.dryRun {
 		klog.V(1).InfoS("Evicted pod in dry run mode", "pod", klog.KObj(pod), "reason", opts.Reason, "strategy", strategy, "node", pod.Spec.NodeName)
+		// 存到内存
+		pe.storeOutputPod(pod)
 	} else {
 		klog.V(1).InfoS("Evicted pod", "pod", klog.KObj(pod), "reason", opts.Reason, "strategy", strategy, "node", pod.Spec.NodeName)
 		reason := opts.Reason
@@ -204,4 +222,65 @@ func evictPod(ctx context.Context, client clientset.Interface, pod *v1.Pod, poli
 		return fmt.Errorf("pod not found when evicting %q: %v", pod.Name, err)
 	}
 	return err
+}
+
+func (pe *PodEvictor) storeOutputPod(pod *v1.Pod) {
+	name := pod.GetName()
+	ns := pod.GetNamespace()
+	pe.outputPods[name] = ns
+}
+
+func (pe *PodEvictor) StoreInCM() error {
+	if len(pe.outputPods) == 0 {
+		klog.Info("skip output, outputPods is null")
+		return nil
+	}
+
+	outputPodsData, err := json.Marshal(pe.outputPods)
+	if err != nil {
+		klog.Errorf("Marshal outputPods err: %v", err)
+		return err
+	}
+	cm := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      pe.outputName,
+			Namespace: pe.outputNamespace,
+		},
+		Data: map[string]string{
+			"evictPods.txt": string(outputPodsData),
+		},
+	}
+
+	err = pe.createOrUpdateCM(cm)
+	if err != nil {
+		return err
+	}
+
+	klog.Info("store evict pods in cm success")
+	return nil
+}
+
+func (pe *PodEvictor) createOrUpdateCM(cm *v1.ConfigMap) error {
+	oldCM, err := pe.kubeClient.CoreV1().ConfigMaps(pe.outputNamespace).Get(context.Background(), cm.Name, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			_, err = pe.kubeClient.CoreV1().ConfigMaps(pe.outputNamespace).Create(context.Background(), cm, metav1.CreateOptions{})
+			if err != nil {
+				klog.Errorf("create cm(%v/%v) err: %v", cm.Namespace, cm.Name, err)
+				return err
+			}
+			return nil
+		}
+		klog.Errorf("get cm(%v/%v) err: %v", cm.Namespace, cm.Name, err)
+		return err
+	}
+
+	cm.ResourceVersion = oldCM.ResourceVersion
+	_, err = pe.kubeClient.CoreV1().ConfigMaps(pe.outputNamespace).Update(context.Background(), cm, metav1.UpdateOptions{})
+	if err != nil {
+		klog.Errorf("update cm(%v/%v) err: %v", cm.Namespace, cm.Name, err)
+		return err
+	}
+
+	return nil
 }

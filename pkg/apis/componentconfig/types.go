@@ -43,6 +43,11 @@ type DeschedulerConfiguration struct {
 	// Dry run
 	DryRun bool
 
+	// output cm ns
+	OutputNamespace string
+	// output cm name
+	OutputName string
+
 	// Node selectors
 	NodeSelector string
 

@@ -1409,6 +1409,9 @@ func TestTopologySpreadConstraint(t *testing.T) {
 
 			podEvictor := evictions.NewPodEvictor(
 				fakeClient,
+				"test",
+				"test",
+				fakeClient,
 				"v1",
 				false,
 				nil,

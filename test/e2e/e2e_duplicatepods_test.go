@@ -164,6 +164,9 @@ func TestRemoveDuplicates(t *testing.T) {
 
 			podEvictor := evictions.NewPodEvictor(
 				clientSet,
+				"test",
+				"test",
+				clientSet,
 				evictionPolicyGroupVersion,
 				false,
 				nil,
